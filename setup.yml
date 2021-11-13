@@ -1,0 +1,50 @@
+# - Python3
+# - Vim
+# - ZSH
+# - Get my dotfiles
+# - Need Oh My ZSH
+# - VSCode 
+# - Add all git repos that I want for projects
+# - Install github CLI
+# - Add more to your playbook as you add more tools
+- name: Install all the packages I need for development
+  hosts: all
+  connection: local
+  gather_facts: true
+  vars:
+      should_be_root:  "{{ true if ansible_pkg_mgr != 'brew' else false }}"
+  tasks:
+      - name: Install zsh
+        package:
+            name: zsh
+            state: present
+
+      - name: Make zsh the default shell
+        become: "{{ should_be_root }}"
+        command: chsh -s /usr/bin/zsh
+
+      - name: Install curl
+        package:
+            name: curl
+            state: present
+
+      - name: Install OH MY ZSH
+        shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        register: result
+        failed_when: 
+          - "'The $ZSH folder already exists' not in result.stdout"
+          - result.rc >= 1
+      - debug: var=result.stdout
+
+      - name: Install Node.js
+        become: "{{ should_be_root }}"
+        package: 
+            name: nodejs
+            state: present
+
+      - name: Install npm
+        become: "{{ should_be_root }}"
+        package:
+            name: npm
+            state: present
+
