@@ -1,9 +1,7 @@
-# - Python3
-# - Vim
+# - nvim
 # - ZSH
 # - Get my dotfiles
 # - Need Oh My ZSH
-# - VSCode 
 # - Add all git repos that I want for projects
 # - Install github CLI
 # - Add more to your playbook as you add more tools
@@ -36,15 +34,23 @@
           - result.rc >= 1
       - debug: var=result.stdout
 
-      - name: Install Node.js
-        become: "{{ should_be_root }}"
-        package: 
-            name: nodejs
-            state: present
-
-      - name: Install npm
+      - name: Install neovim
         become: "{{ should_be_root }}"
         package:
-            name: npm
+            name: neovim
             state: present
+      
+      - name: Check if vim-plug is installed
+        stat:
+            path: "{{ ansible_env.HOME }}/.local/share/nvim/site/autoload/plug.vim"
+        register: vim_plug
 
+      - name: Check if it exists
+        debug: 
+            msg: "vim-plug exists! Skipping Install vim-plug."
+        when: vim_plug.stat.exists
+
+      - name: Install vim-plug
+        shell: sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+        when: not vim_plug.stat.exists
+        
