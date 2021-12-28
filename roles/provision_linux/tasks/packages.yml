@@ -1,0 +1,28 @@
+- name: Install zsh
+  package:
+      name: zsh
+      state: present
+
+- name: Make zsh the default shell
+  become: yes
+  command: chsh -s /usr/bin/zsh
+
+- name: Install curl
+  package:
+      name: curl
+      state: present
+
+- name: Install OH MY ZSH
+  shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  register: result
+  failed_when: 
+      - "'The $ZSH folder already exists' not in result.stdout"
+      - result.rc >= 1
+- debug: var=result.stdout
+
+- name: Install Vscode
+  become: yes
+  snap: 
+      name: code
+      classic: yes
+      state: present
